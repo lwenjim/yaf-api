@@ -1,14 +1,4 @@
-# 乂学建课系统
-
-## 提供建课相关的业务
-
 ## 构建须知
-
-* php版本 >= 7.1
-* 安装PDO扩展
-* 安装Memcached扩展
-* 安装Redis扩展
-* 安装Yaf扩展
 
 ## 此系统基于php yaf扩展框架构建
 
@@ -25,21 +15,6 @@
 yaf.environ = 'dev'
 yaf.use_namespace = 1
 yaf.use_spl_autoload = 1
-```
-
-##nginx 接口文档配置
-```nginx
-location /apidoc/ {
-  alias /workdata/course_v3/apidoc/;
-  location ~ .*\.(gif|jpg|jpeg|png|bmp|swf|flv|mp4|ico)$ {
-    expires 30d;
-    access_log off;
-  }
-  location ~ .*\.(js|css)?$ {
-    expires 7d;
-    access_log off;
-  }
-}
 ```
 
 ## 一些常用的文档
