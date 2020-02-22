@@ -14,7 +14,7 @@ trait ControllerServiceMap
     public function getControllerMapService()
     {
         $map = [];
-        $dir = APP_PATH . '/app/api/modules';
+        $dir = base_path() . '/app/api/modules';
         foreach (array_diff(scandir($dir), ['.', '..']) as $moduleName) {
             $subDir = sprintf($dir . '/%s/controllers', $moduleName);
             array_map(function (string $basename) use (&$map, $moduleName) {
