@@ -30,7 +30,7 @@ class Restful implements Route_Interface
         if (($pos = strpos($path, '?')) != false) {
             $path = substr($path, 0, $pos);
         }
-        $path = $path == '/' ? "kmap/kmapbaselogic/index" : $path;
+        $path = $path == '/' ? "Api/Api/index" : $path;
         list($module, $control, $param1, $param2) = ($path == '/' ? [] : explode('/', ltrim($path, '/'))) + ['', '', $method, 0];
         $id     = is_numeric($param1) ? $param1 : $param2;
         $method = (is_numeric($param1) || empty($param1)) ? $method : $param1;

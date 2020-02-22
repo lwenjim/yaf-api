@@ -22,7 +22,7 @@ class Http extends Client
         $result   = json_decode($rs, true);
         debug(compact('uri', 'options', 'result'), "http.{$method}");
         if ($result['code'] != 200) {
-            throw new RequestException(sprintf("http error! url:%s, errInfo:%s", $uri, isset($result['message'])?$result['message']:$result['msg']));
+            throw new \Exception(sprintf("http error! url:%s, errInfo:%s", $uri, isset($result['message'])?$result['message']:$result['msg']));
         }
         return $result;
     }

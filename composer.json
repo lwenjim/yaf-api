@@ -36,7 +36,10 @@
     },
     "autoload": {
         "psr-4": {
-            "Lwenjim\\Yaf\\": "src/"
+            "Lwenjim\\Yaf\\": "src/",
+            "Lwenjim\\App\\Models\\": "app/api/models",
+            "Lwenjim\\App\\Services\\": "app/api/services",
+            "Lwenjim\\App\\Transformers\\": "app/api/Transformers"
         },
         "files": [
             "src/helps.php"

@@ -6,5 +6,6 @@
  * Time: 15:31
  */
 return [
-
+    'MAX_PAGESIZE'=>20,
+    ''
 ];

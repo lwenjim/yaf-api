@@ -3,12 +3,14 @@
 namespace Lwenjim\Yaf;
 
 
-use Lwenjim\Yaf\Exceptions\NormalException;
+use Illuminate\Translation\ArrayLoader;
+use Illuminate\Translation\Translator;
+use Illuminate\Validation\Factory;
 use Yaf\Controller_Abstract as ControllerAbstract;
 
 abstract class Controller extends ControllerAbstract
 {
-    use Redis, Validator, Json, ControllerServiceMap, Aop, Request, ControllerModelMap;
+    use Json, Aop, Request;
 
     final protected function getParam(string $key)
     {
@@ -20,7 +22,7 @@ abstract class Controller extends ControllerAbstract
         try {
             $this->_indexBefore();
             $this->todoCheck();;
-            list('params' => $params, 'list' => $list) = $this->getControllerMapService()->index();
+            list('params' => $params, 'list' => $list) = $this->getService()->index();
             $this->_indexAfter($params, $list);
             $this->jsonResponse(200, '', $list);
         } catch (\Exception|\Error $exception) {
@@ -34,7 +36,7 @@ abstract class Controller extends ControllerAbstract
         try {
             $this->_getBefore($this);
             $this->todoCheck();;
-            list('params' => $params, 'detail' => $detail) = $this->getControllerMapService()->get();
+            list('params' => $params, 'detail' => $detail) = $this->getService()->get();
             $this->_getAfter($params, $detail);
             $this->jsonResponse(200, '', $detail);
         } catch (\Exception|\Error $exception) {
@@ -51,7 +53,7 @@ abstract class Controller extends ControllerAbstract
             } else {
                 $this->todoCheck();;
             }
-            list('params' => $params, 'model' => $model) = $this->getControllerMapService()->post();
+            list('params' => $params, 'model' => $model) = $this->getService()->post();
             $this->_postAfter($params, $model);
             $model = $model->toArray();
             $this->jsonResponse(200, $model ? "新增成功" : '', $model);
@@ -60,10 +62,6 @@ abstract class Controller extends ControllerAbstract
             error($exception->getMessage());
             $data = [];
             $msg  = $exception->getMessage();
-            if ($exception instanceof NormalException) {
-                $data = $exception->getReturn();
-                $msg  = '';
-            }
             $this->jsonResponse(500, $msg, $data);
         }
     }
@@ -74,7 +72,7 @@ abstract class Controller extends ControllerAbstract
         if (!empty($this->getParam('todo'))) {
             $method = $this->getParam('todo');
             method_exists($this, $method) and $this->$method($params);
-            $service = $this->getControllerMapService();
+            $service = $this->getService();
             if (!method_exists($service, $method)) {
                 throw new \Exception('not exists method:' . $method . ' the service of ' . $service->getServiceName());
             }
@@ -92,7 +90,7 @@ abstract class Controller extends ControllerAbstract
             } else {
                 $this->todoCheck();
             }
-            list('params' => $params, 'result' => $result, 'model' => $model) = $this->getControllerMapService()->put();
+            list('params' => $params, 'result' => $result, 'model' => $model) = $this->getService()->put();
             $this->_putAfter($params, $result, $model);
             $this->jsonResponse(200, $result ? '修改成功' : '', $model);
         } catch (\Exception|\Error $exception) {
@@ -106,8 +104,8 @@ abstract class Controller extends ControllerAbstract
         $params = $this->getParams();
         list('rules' => $rules, 'message' => $message) = $this->_putBefore();
         if (empty($rules) || empty($message)) {
-            $rules   = $this->getControllerMapModel()::getRules();
-            $message = $this->getControllerMapModel()::getMessages();
+            $rules   = $this->getModel()::getRules();
+            $message = $this->getModel()::getMessages();
         }
         $rules = array_map(function ($rule) {
             return array_diff($rule, ['required']);
@@ -133,7 +131,7 @@ abstract class Controller extends ControllerAbstract
         try {
             $this->_deleteBefore($this);
             $this->todoCheck();
-            list('result' => $result) = $this->getControllerMapService()->delete();
+            list('result' => $result) = $this->getService()->delete();
             $this->jsonResponse(200, $result ? '删除成功' : '');
         } catch (\Exception|\Error $exception) {
             error($exception->getMessage());
@@ -153,8 +151,8 @@ abstract class Controller extends ControllerAbstract
     {
         list('rules' => $rules, 'message' => $message) = $this->_postBefore();
         if (empty($rules) || empty($message)) {
-            $rules   = $this->getControllerMapModel()::getRules();
-            $message = $this->getControllerMapModel()::getMessages();
+            $rules   = $this->getModel()::getRules();
+            $message = $this->getModel()::getMessages();
         }
         if (!empty($rules) && !empty($message)) {
             if (!$this->isBatch()) {
@@ -191,5 +189,68 @@ abstract class Controller extends ControllerAbstract
             return $map[$name];
         }
         return $name;
+    }
+
+    public function getService():Service
+    {
+        $map = [];
+        $dir = base_path() . '/app/api/modules';
+        foreach (array_diff(scandir($dir), ['.', '..']) as $moduleName) {
+            $subDir = sprintf($dir . '/%s/controllers', $moduleName);
+            array_map(function (string $basename) use (&$map, $moduleName) {
+                $filename = pathinfo($basename, PATHINFO_FILENAME);
+                $filename = $this->getControllerAlias($filename);
+                $cur      = [$filename . "Controller" => '\\Lwenjim\\App\\Services\\' . $moduleName . '\\' . $filename . 'Service'];
+                $map      = array_merge($map, $cur);
+            }, array_diff(scandir($subDir), ['.', '..']));
+        }
+        return $map[static::class]::getInstance($this);
+    }
+
+    public function getModel()
+    {
+        $map = [];
+        $dir = base_path() . '/app/api/modules';
+        foreach (array_diff(scandir($dir), ['.', '..']) as $moduleName) {
+            $subDir = sprintf($dir . '/%s/controllers', $moduleName);
+            array_map(function (string $basename) use (&$map, $moduleName) {
+                $filename = pathinfo($basename, PATHINFO_FILENAME);
+                $filename = $this->getControllerAlias($filename);
+                $cur      = [$filename . "Controller" => '\\Lwenjim\\App\\Models\\' . $moduleName . '\\' . $filename . 'Model'];
+                $map      = array_merge($map, $cur);
+            }, array_diff(scandir($subDir), ['.', '..']));
+        }
+        return $map[static::class];
+    }
+
+    public function validator()
+    {
+        static $validator = null;
+        if (empty($validator)) {
+            $validator = new Factory(new Translator(new ArrayLoader(), 'Translator'));
+        }
+        return $validator;
+    }
+
+    public function getValidatorError($validator)
+    {
+        $errors = $validator->errors()->toArray();
+        foreach ($errors as $k => $v){
+            if ($this->checkHasCn($v)){
+                $message[] =  $v[0];
+            }else{
+                $message[] = "参数（{$k}）:" . $v[0];
+            }
+        }
+        return implode("--", $message ?? []);
+    }
+
+    private function checkHasCn($str): bool
+    {
+        if ($ret = preg_grep("/[\x{4e00}-\x{9fff}]/u", $str)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }

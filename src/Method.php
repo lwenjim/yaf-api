@@ -16,10 +16,10 @@ trait Method
     {
         $params = $this->getParams();
         $this->_indexBefore($params);
-        $class  = $this->getServiceTransformerMap();
+        $class  = $this->getTransformer();
         $column = $this->getModelColumn();
         if (!method_exists($this, 'getServiceModelMapForIndex')) {
-            $builder = $this->getServiceModelMap()::whereForce($column, $params);
+            $builder = $this->getModel()::whereForce($column, $params);
         } else {
             $builder = $this->getServiceModelMapForIndex()->whereForce($column, $params);
         }
@@ -30,8 +30,9 @@ trait Method
         foreach (explode('|', $params['order']) as $orderBy) {
             $builder->orderBy(...explode(',', $orderBy));
         }
-        $pageSize = isset($params['page_size']) ? $params['page_size'] : KmapModel::PAGESIZE;
-        $pageSize > KmapModel::MAX_PAGESIZE and $pageSize = KmapModel::MAX_PAGESIZE;
+        $pageSizeDefualt = config('config.MAX_PAGESIZE');
+        $pageSize = isset($params['page_size']) ? $params['page_size'] : $pageSizeDefualt;
+        $pageSize > $pageSizeDefualt and $pageSize = $pageSizeDefualt;
         $data = $builder->paginate($pageSize, ['*'], 'page', $params['page'] ?? 1);
         $list = $this->paginator($data, new $class);
         $this->_indexAfter($params, $list);
@@ -40,7 +41,7 @@ trait Method
 
     protected function getModelColumn()
     {
-        $classModel = $this->getServiceModelMap();
+        $classModel = $this->getModel();
         $modelObj   = new $classModel;
         $connection = Manager::getInstance()->getDatabaseManager()->connection($modelObj->getConnectionName());
         $sql        = sprintf('show columns from %s', $connection->getTablePrefix() . $modelObj->getTable());
@@ -51,11 +52,11 @@ trait Method
     {
         $params = $this->getParams();
         $this->_getBefore($params);
-        $class  = $this->getServiceTransformerMap();
+        $class  = $this->getTransformer();
         if (isset($params['withTrashed'])) {
-            $model  = $this->getServiceModelMap()::withTrashed()->findOrFail($params['id']);
+            $model  = $this->getModel()::withTrashed()->findOrFail($params['id']);
         }else{
-            $model  = $this->getServiceModelMap()::findOrFail($params['id']);
+            $model  = $this->getModel()::findOrFail($params['id']);
         }
         $detail = $this->item($model, new $class)['data'];
         $this->_getAfter($params, $detail);
@@ -66,7 +67,7 @@ trait Method
     {
         $params = $this->getParams();
         $this->_postBefore($params);
-        $class    = $this->getServiceModelMap();
+        $class    = $this->getModel();
         $modelObj = new $class;
         $column   = $this->getModelColumn();
         $params   = $params + $this->getCommonFields();
@@ -85,7 +86,7 @@ trait Method
     {
         $params = $this->getParams();
         $this->_putBefore($params);
-        $model  = $this->getServiceModelMap()::find($params['id']);
+        $model  = $this->getModel()::find($params['id']);
         $column = $this->getModelColumn();
         $column = ['updated_time' => time(), 'updated_user' => $this->user()->user_id] + $column;
         $data   = array_intersect_key($params, array_flip($column));
@@ -101,7 +102,7 @@ trait Method
     {
         $params = $this->getParams();
         $this->_batchInsertBefore($params);
-        $class    = $this->getServiceModelMap();
+        $class    = $this->getModel();
         $modelObj = new $class;
         $column   = $this->getModelColumn();
         $data     = array_map(function ($p) use ($column) {
@@ -112,14 +113,14 @@ trait Method
             $data        = array_map(function ($d) use ($parentModel) {
                 return $d + ['parent_id' => $parentModel->id];
             }, $data);
-            $affectRow   = $this->getServiceModelMap()::insert($data);
+            $affectRow   = $this->getModel()::insert($data);
         } else {
             $data      = array_map(function ($d) {
                 return $d + $this->getCommonFields();
             }, $data);
             $affectRow = 0;
             foreach (array_chunk($data, 100) as $group) {
-                $affectRow += $this->getServiceModelMap()::insert($group);
+                $affectRow += $this->getModel()::insert($group);
             }
         }
         $this->_batchInsertAfter($params, $affectRow);
@@ -136,7 +137,7 @@ trait Method
         $models = [];
         array_map(function ($p) use ($column, $params, &$result, &$models) {
             $data  = array_intersect_key($p, array_flip($column));
-            $model = $this->getServiceModelMap()::where(['id' => $p['id'], 'logic_id' => $params['logic_id']])->first();
+            $model = $this->getModel()::where(['id' => $p['id'], 'logic_id' => $params['logic_id']])->first();
             if (!empty($params['parent_data'])) {
                 $model->getParent()->update($this->getParams()['parent_data']);
             }
@@ -160,7 +161,7 @@ trait Method
             $ids = array_diff($ids, ['', null]);
             $ids = array_unique($ids);
         }
-        $result = $this->getServiceModelMap()::whereIn('id', $ids)->delete();
+        $result = $this->getModel()::whereIn('id', $ids)->delete();
         $this->_deleteAfter($params, $result);
         return compact('params', 'result');
     }

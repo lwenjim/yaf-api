@@ -40,7 +40,6 @@ class Application extends Container
             if (!empty(env('APP_TIMEZONE'))) {
                 date_default_timezone_set(env('APP_TIMEZONE', 'UTC'));
             }
-
             $this->basePath = $basePath;
             $this->bootstrapContainer();
             $config    = array(
@@ -173,7 +172,6 @@ class Application extends Container
     {
         return \Yaf\ENVIRON;
     }
-
 
     public static function app(string $key = null, $instance = null)
     {
