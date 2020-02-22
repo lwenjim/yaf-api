@@ -40,7 +40,18 @@ class Log
         if (!empty($this->handler)) {
             return $this->handler;
         }
-        $this->handler = new StreamHandler($this->getPath(), Logger::DEBUG, true, 0777);
+        $this->handler = new class($this->getPath(), Logger::DEBUG, true, 0777) extends \Monolog\Handler\StreamHandler
+        {
+            protected function write(array $record)
+            {
+                [, $theDate] = explode('-', pathinfo($this->getUrl(), PATHINFO_FILENAME), 2);
+                if ($theDate != ($currentDate = date('Y-m-d'))) {
+                    unset($this->stream);
+                    $this->url = str_replace($theDate, $currentDate, $this->getUrl());
+                }
+                parent::write($record);
+            }
+        };
         $this->handler->setFormatter(new LineFormatter($this->getOutputTemplate(), "Y-m-d H:i:s"));
         return $this->handler;
     }
