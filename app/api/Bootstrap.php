@@ -1,14 +1,13 @@
 <?php
 
-use Com\Plugin\DefaultPlugin;
-use Main\Library\Json;
-use Main\Yaf\Application;
-use Main\Yaf\Route\Restful;
+use Lwenjim\Yaf\Application;
+use Lwenjim\Yaf\DefaultPlugin;
+use Lwenjim\Yaf\Json;
+use Lwenjim\Yaf\Restful;
 use Yaf\Bootstrap_Abstract;
-use Yaf\Config\Ini;
 use Yaf\Dispatcher;
 use Yaf\Request\Http;
-use Main\Library\Database\Capsule\Manager as DatabaseManager;
+use Lwenjim\Yaf\Manager as DatabaseManager;
 
 class Bootstrap extends Bootstrap_Abstract
 {
@@ -31,7 +30,6 @@ class Bootstrap extends Bootstrap_Abstract
 
     public function _initRoute(Dispatcher $dispatcher)
     {
-        $dispatcher->getRouter()->addConfig(new Ini(APP_PATH . '/config/api_routes.ini', Application::getEnv()));
         $dispatcher->getRouter()->addRoute('restfull', new Restful());
         $dispatcher->setRequest(new class($dispatcher->getRequest()->getRequestUri(), $dispatcher->getRequest()->getBaseUri()) extends Http
         {
@@ -52,7 +50,7 @@ class Bootstrap extends Bootstrap_Abstract
 
     public function _initModule()
     {
-        foreach (Application::getAlias() as $abstruct => $alias) {
+        foreach (Application::getClassAlias() as $abstruct => $alias) {
             $abstruct::getInstance();
         }
     }

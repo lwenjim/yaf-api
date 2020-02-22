@@ -6,7 +6,7 @@
  * Time: 20:04
  */
 
-namespace Main\Map;
+namespace Lwenjim\Yaf;
 
 
 trait ControllerServiceMap
@@ -20,7 +20,7 @@ trait ControllerServiceMap
             array_map(function (string $basename) use (&$map, $moduleName) {
                 $filename = pathinfo($basename, PATHINFO_FILENAME);
                 $filename = $this->getControllerAlias($filename);
-                $cur      = [$filename . "Controller" => 'Main\Service\\' . $moduleName . '\\' . $filename . 'Service'];
+                $cur      = [$filename . "Controller" => '' . $moduleName . '\\' . $filename . 'Service'];
                 $map      = array_merge($map, $cur);
             }, array_diff(scandir($subDir), ['.', '..']));
         }

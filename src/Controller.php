@@ -1,13 +1,7 @@
 <?php
 
-namespace Com;
+namespace Lwenjim\Yaf;
 
-use Main\Exception\NormalException;
-use Main\Library\Json;
-use Main\Library\Redis;
-use Main\Library\Validator;
-use Main\Map\ControllerModelMap;
-use Main\Map\ControllerServiceMap;
 
 
 abstract class Controller extends \Yaf\Controller_Abstract

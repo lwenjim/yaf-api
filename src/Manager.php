@@ -6,15 +6,12 @@
  * Time: 10:00
  */
 
-namespace Main\Library\Database\Capsule;
+namespace Lwenjim\Yaf;
 
 use Illuminate\Database\Capsule\Manager as CapsuleManager;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Events\Dispatcher;
-use Main\Library\Instance;
-use Main\Library\Math;
 use Yaf\Dispatcher as YafDispatcher;
-use Yaf\Registry;
 
 class Manager extends CapsuleManager
 {
@@ -29,10 +26,7 @@ class Manager extends CapsuleManager
 
     public function database()
     {
-        $this->addConnection(Registry::get('mysql_ini')->toArray());
-        $this->addConnection(Registry::get('mysql_kmap_ini')->toArray(), 'KmapConnection');
-        $this->addConnection(Registry::get('mysql_ini')->toArray(), 'CourseConnection');
-        $this->addConnection(Registry::get('mysql_operation_platform_ini')->toArray(), 'MysqlOperationPlatform');
+        $this->addConnection(config('database.connections.mysql'));
         $this->setEventDispatcher(new Dispatcher($this->getContainer()));
         $this->setAsGlobal();
         $this->bootEloquent();

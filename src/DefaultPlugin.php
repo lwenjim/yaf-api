@@ -6,7 +6,7 @@
  * Time: 10:57
  */
 
-namespace Com\Plugin;
+namespace Lwenjim\Yaf;
 
 use Yaf\Plugin_Abstract as Plugin;
 use Yaf\Request_Abstract as Request;

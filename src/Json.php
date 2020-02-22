@@ -6,11 +6,9 @@
  * Time: 10:36
  */
 
-namespace Main\Library;
+namespace Lwenjim\Yaf;
 
 
-use Main\Model\Kmap\ComOperateLogModel;
-use Main\Service\OperateLog;
 
 trait Json
 {

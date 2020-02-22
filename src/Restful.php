@@ -6,15 +6,14 @@
  * Time: 10:43
  */
 
-namespace Main\Yaf\Route;
+namespace Lwenjim\Yaf;
 
 use Yaf\Exception as YafException;
 use Yaf\Route_Interface;
-use Yaf\Request_Abstract as Request;
 
 class Restful implements Route_Interface
 {
-    public function route(Request $request)
+    public function route($request)
     {
         $overRide = getallheaders();
         if (isset($overRide['X-Http-Method-Override'])) {

@@ -6,7 +6,7 @@
  * Time: 17:44
  */
 
-namespace Com;
+namespace Lwenjim\Yaf;
 
 
 trait Aop

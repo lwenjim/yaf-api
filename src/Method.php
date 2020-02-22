@@ -6,11 +6,9 @@
  * Time: 20:34
  */
 
-namespace Main\Service;
+namespace Lwenjim\Yaf;
 
 
-use Main\Library\Database\Capsule\Manager;
-use Main\Model\Kmap\KmapModel;
 
 trait Method
 {

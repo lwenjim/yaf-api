@@ -6,25 +6,10 @@
  * Time: 15:33
  */
 
-namespace Main\Service;
+namespace Lwenjim\Yaf;
 
 
-use Com\Controller;
-use Main\Library\Database\Capsule\Manager as DatabaseManager;
-use Main\Library\Instance;
-use Main\Library\Redis;
-use Main\Map\ServiceModelMap;
-use Main\Map\ServiceTransformerMap;
-use Main\Model\Course\BasicModel;
-use Main\Model\Course\ChapterModel;
-use Main\Model\Course\KmapRddModel;
-use Main\Model\Course\KnowledgeRangeModel;
-use Main\Model\Kmap\ComOperateLogModel;
-use Main\Model\Kmap\KmapBaseLogicNodeModel;
-use Main\Model\Kmap\KmapLocalNodeModel;
-use Main\Model\Kmap\KmapLocalPreNodeModel;
-use Main\Model\Kmap\KmapModel;
-use Main\Yaf\Config;
+use Manager as DatabaseManager;
 
 abstract class Service
 {
@@ -132,7 +117,6 @@ abstract class Service
 
     protected function _deleteAfter(array &$params, int &$result)
     {
-        $this->operateLog($params['id'], ComOperateLogModel::ACTION_DELETE);
     }
 
     protected function checkCloseLoopRecursive($node, $pre, $mainNode, &$history)

@@ -1,6 +1,6 @@
 <?php
 
-namespace Main\Library;
+namespace Lwenjim\Yaf;
 
 use Predis\Client;
 use Yaf\Registry;

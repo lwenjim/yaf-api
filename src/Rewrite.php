@@ -6,7 +6,7 @@
  * Time: 3:47 PM
  */
 
-namespace Main\Yaf\Route;
+namespace Lwenjim\Yaf;
 
 use Closure;
 use ReflectionClass;

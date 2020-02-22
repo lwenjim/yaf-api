@@ -3,15 +3,15 @@
  * Created by PhpStorm.
  * User: jim
  * Date: 2019-07-23
- * Time: 20:22
+ * Time: 20:04
  */
 
-namespace Main\Map;
+namespace Lwenjim\Yaf;
 
 
-trait ServiceModelMap
+trait ControllerModelMap
 {
-    protected function getServiceModelMap()
+    public function getControllerMapModel()
     {
         $map = [];
         $dir = APP_PATH . '/app/api/modules';
@@ -19,12 +19,11 @@ trait ServiceModelMap
             $subDir = sprintf($dir . '/%s/controllers', $moduleName);
             array_map(function (string $basename) use (&$map, $moduleName) {
                 $filename = pathinfo($basename, PATHINFO_FILENAME);
-                $filename = $this->getController()->getControllerAlias($filename);
-                $cur      = ['Main\Service\\' . $moduleName . '\\' . $filename . 'Service' => 'Main\Model\\' . $moduleName . '\\' . $filename . 'Model'];
+                $filename = $this->getControllerAlias($filename);
+                $cur      = [$filename . "Controller" => '' . $moduleName . '\\' . $filename . 'Model'];
                 $map      = array_merge($map, $cur);
             }, array_diff(scandir($subDir), ['.', '..']));
         }
-
         return $map[static::class];
     }
 }

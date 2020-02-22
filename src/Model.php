@@ -6,7 +6,7 @@
  * Time: 15:21
  */
 
-namespace Main\Model;
+namespace Lwenjim\Yaf;
 
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 

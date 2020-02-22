@@ -6,10 +6,9 @@
  * Time: 12:21
  */
 
-namespace Main\Library;
+namespace Lwenjim\Yaf;
 
 
-use Main\Yaf\Application;
 
 trait Instance
 {

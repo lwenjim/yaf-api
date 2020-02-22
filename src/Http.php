@@ -6,10 +6,9 @@
  * Time: 4:55 PM
  */
 
-namespace Main\Library;
+namespace Lwenjim\Yaf;
 
 use GuzzleHttp\Client;
-use Main\Exception\RequestException;
 
 
 class Http extends Client

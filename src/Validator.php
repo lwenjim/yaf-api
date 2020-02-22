@@ -6,7 +6,7 @@
  * Time: 00:21
  */
 
-namespace Main\Library;
+namespace Lwenjim\Yaf;
 
 
 use Illuminate\Translation\ArrayLoader;

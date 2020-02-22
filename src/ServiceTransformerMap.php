@@ -6,7 +6,7 @@
  * Time: 20:28
  */
 
-namespace Main\Map;
+namespace Lwenjim\Yaf;
 
 
 trait ServiceTransformerMap
@@ -20,7 +20,7 @@ trait ServiceTransformerMap
             array_map(function (string $basename) use (&$map, $moduleName) {
                 $filename = pathinfo($basename, PATHINFO_FILENAME);
                 $filename = $this->getController()->getControllerAlias($filename);
-                $cur      = ['Main\Service\\' . $moduleName . '\\' . $filename . 'Service' => 'Main\Transformers\\' . $moduleName . '\\' . $filename . 'Transformer'];
+                $cur      = ['\\' . $moduleName . '\\' . $filename . 'Service' => '\\' . $moduleName . '\\' . $filename . 'Transformer'];
                 $map      = array_merge($map, $cur);
             }, array_diff(scandir($subDir), ['.', '..']));
         }

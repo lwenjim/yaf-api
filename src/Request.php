@@ -6,7 +6,7 @@
  * Time: 20:33
  */
 
-namespace Com;
+namespace Lwenjim\Yaf;
 
 
 trait Request

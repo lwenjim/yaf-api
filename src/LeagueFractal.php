@@ -6,7 +6,7 @@
  * Time: 20:31
  */
 
-namespace Main\Service;
+namespace Lwenjim\Yaf;
 
 use League\Fractal\Manager;
 use League\Fractal\Pagination\IlluminatePaginatorAdapter;

@@ -1,10 +1,9 @@
 <?php
 
-use Main\Library\Json;
 
 class ErrorController extends \Yaf\Controller_Abstract
 {
-    use Json;
+    use \Lwenjim\Yaf\Json;
 
     public function errorAction(\Exception $exception)
     {

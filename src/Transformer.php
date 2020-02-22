@@ -6,7 +6,7 @@
  * Time: 15:11
  */
 
-namespace Main\Transformers;
+namespace Lwenjim\Yaf;
 
 use League\Fractal\TransformerAbstract;
 
