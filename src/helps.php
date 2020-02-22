@@ -3,6 +3,7 @@
 
 use Illuminate\Container\Container;
 use Illuminate\Support\Str;
+use Lwenjim\Yaf\Log;
 
 if (!function_exists('getallheaders')) {
     function getallheaders()
@@ -17,7 +18,7 @@ if (!function_exists('getallheaders')) {
     }
 }
 
-if (! function_exists('env')) {
+if (!function_exists('env')) {
     function env($key, $default = null)
     {
         $value = getenv($key);
@@ -52,7 +53,7 @@ if (! function_exists('env')) {
     }
 }
 
-if (! function_exists('app')) {
+if (!function_exists('app')) {
     function app($make = null)
     {
         if (is_null($make)) {
@@ -63,14 +64,14 @@ if (! function_exists('app')) {
     }
 }
 
-if (! function_exists('base_path')) {
+if (!function_exists('base_path')) {
     function base_path($path = '')
     {
-        return app()->basePath().($path ? '/'.$path : $path);
+        return app()->basePath() . ($path ? '/' . $path : $path);
     }
 }
 
-if (! function_exists('config')) {
+if (!function_exists('config')) {
     function config($key = null, $default = null)
     {
         if (is_null($key)) {
@@ -107,4 +108,24 @@ function _array_count_values(array $input)
     return array_count_values(array_map(function ($value) {
         return $value . '';
     }, $input));
+}
+
+function debug($data, ?string $key = 'debug')
+{
+    try {
+        $data = is_array($data) ? json_encode($data, JSON_UNESCAPED_UNICODE) : $data;
+        Log::getInstance()->debug($key . '-' . $data);
+    } catch (\Exception|\Error $exception) {
+        echo $exception->getMessage();
+        exit;
+    }
+}
+
+function error($data, ?string $key = 'error')
+{
+    try {
+        $data = is_array($data) ? json_encode($data, JSON_UNESCAPED_UNICODE) : $data;
+        Log::getInstance()->error($key . '-' . $data);
+    } catch (\Exception|\Error $exception) {
+    }
 }

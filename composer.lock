@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "cd96e77b0c2d0b0f8b6ffee3fa3adae8",
+    "content-hash": "2e4c4ae86cc929c9530aa86155c886ba",
     "packages": [
         {
             "name": "doctrine/inflector",
@@ -946,54 +946,6 @@
                 "rest"
             ],
             "time": "2019-05-10T02:16:43+00:00"
-        },
-        {
-            "name": "lwenjim/log",
-            "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/lwenjim/log.git",
-                "reference": "14c89a289dec32a2a5b4135d6ca2a6060c78112e"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/lwenjim/log/zipball/14c89a289dec32a2a5b4135d6ca2a6060c78112e",
-                "reference": "14c89a289dec32a2a5b4135d6ca2a6060c78112e",
-                "shasum": "",
-                "mirrors": [
-                    {
-                        "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
-                        "preferred": true
-                    }
-                ]
-            },
-            "require": {
-                "ext-json": "^1.5",
-                "monolog/monolog": "1.24.0"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "7.5.9"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.0.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "JimLog\\": "src/"
-                },
-                "files": [
-                    "common/help.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "description": "record log",
-            "time": "2020-02-14T13:49:07+00:00"
         },
         {
             "name": "monolog/monolog",
@@ -3618,9 +3570,7 @@
     ],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": {
-        "lwenjim/log": 20
-    },
+    "stability-flags": [],
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {

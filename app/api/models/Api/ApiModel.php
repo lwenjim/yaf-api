@@ -13,5 +13,5 @@ use Lwenjim\App\Models\Model;
 
 class ApiModel extends Model
 {
-
+    protected $table = 'dpool_notification_pool';
 }
