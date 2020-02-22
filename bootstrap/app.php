@@ -1,10 +1,10 @@
 <?php
+require_once __DIR__ . '/../vendor/autoload.php';
 
 use Dotenv\Dotenv;
 use Dotenv\Exception\InvalidPathException;
 use Lwenjim\Yaf\Application;
 
-require_once __DIR__ . '/../vendor/autoload.php';
 
 try {
     (new Dotenv(__DIR__ . '/../'))->load();

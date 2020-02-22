@@ -3,10 +3,12 @@
 namespace Lwenjim\Yaf;
 
 
+use Lwenjim\Yaf\Exceptions\NormalException;
+use Yaf\Controller_Abstract as ControllerAbstract;
 
-abstract class Controller extends \Yaf\Controller_Abstract
+abstract class Controller extends ControllerAbstract
 {
-    use Redis, Validator, Json, ControllerServiceMap, Aop, Request, ControllerModelMap, User;
+    use Redis, Validator, Json, ControllerServiceMap, Aop, Request, ControllerModelMap;
 
     final protected function getParam(string $key)
     {
