@@ -10,7 +10,7 @@
 return [
     'MAX_PAGESIZE' => 20,
     'log'          => [
-        'path'    => base_path() . 'runtime/log',
+        'path'    => base_path() . '/runtime/log',
         'channel' => 'yafapi'
     ],
 ];
