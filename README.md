@@ -11,7 +11,7 @@ yaf.use_spl_autoload = 1
 #### 路由协议
 * Rewrite
 * Restful 
-* default
+* Default
 
 #### 基本设计
 * 1.yaf + orm(eloquent) [yaf-参考](https://www.php.net/manual/zh/book.yaf.php) [eloquent-参考](https://laravel.com/docs/6.x/eloquent)
