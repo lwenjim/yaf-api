@@ -59,18 +59,21 @@ abstract class Controller extends ControllerAbstract
         return $this->getRequest()->getParam($key);
     }
 
-    public function getService():Service
+    public function getService(): Service
     {
-        $map = [];
-        $dir = base_path() . '/app/api/modules';
-        foreach (array_diff(scandir($dir), ['.', '..']) as $moduleName) {
-            $subDir = sprintf($dir . '/%s/controllers', $moduleName);
-            array_map(function (string $basename) use (&$map, $moduleName) {
-                $filename = pathinfo($basename, PATHINFO_FILENAME);
-                $filename = $this->getControllerAlias($filename);
-                $cur      = [$filename . "Controller" => '\\Lwenjim\\App\\Services\\' . $moduleName . '\\' . $filename . 'Service'];
-                $map      = array_merge($map, $cur);
-            }, array_diff(scandir($subDir), ['.', '..']));
+        static $map = false;
+        if ($map === false) {
+            $map = [];
+            $dir = base_path() . '/app/api/modules';
+            foreach (array_diff(scandir($dir), ['.', '..']) as $moduleName) {
+                $subDir = sprintf($dir . '/%s/controllers', $moduleName);
+                array_map(function (string $basename) use (&$map, $moduleName) {
+                    $filename = pathinfo($basename, PATHINFO_FILENAME);
+                    $filename = $this->getControllerAlias($filename);
+                    $cur      = [$filename . "Controller" => '\\Lwenjim\\App\\Services\\' . $moduleName . '\\' . $filename . 'Service'];
+                    $map      = array_merge($map, $cur);
+                }, array_diff(scandir($subDir), ['.', '..']));
+            }
         }
         return $map[static::class]::getInstance($this);
     }
@@ -168,16 +171,19 @@ abstract class Controller extends ControllerAbstract
 
     public function getModel()
     {
-        $map = [];
-        $dir = base_path() . '/app/api/modules';
-        foreach (array_diff(scandir($dir), ['.', '..']) as $moduleName) {
-            $subDir = sprintf($dir . '/%s/controllers', $moduleName);
-            array_map(function (string $basename) use (&$map, $moduleName) {
-                $filename = pathinfo($basename, PATHINFO_FILENAME);
-                $filename = $this->getControllerAlias($filename);
-                $cur      = [$filename . "Controller" => '\\Lwenjim\\App\\Models\\' . $moduleName . '\\' . $filename . 'Model'];
-                $map      = array_merge($map, $cur);
-            }, array_diff(scandir($subDir), ['.', '..']));
+        static $map = false;
+        if ($map === false) {
+            $map = [];
+            $dir = base_path() . '/app/api/modules';
+            foreach (array_diff(scandir($dir), ['.', '..']) as $moduleName) {
+                $subDir = sprintf($dir . '/%s/controllers', $moduleName);
+                array_map(function (string $basename) use (&$map, $moduleName) {
+                    $filename = pathinfo($basename, PATHINFO_FILENAME);
+                    $filename = $this->getControllerAlias($filename);
+                    $cur      = [$filename . "Controller" => '\\Lwenjim\\App\\Models\\' . $moduleName . '\\' . $filename . 'Model'];
+                    $map      = array_merge($map, $cur);
+                }, array_diff(scandir($subDir), ['.', '..']));
+            }
         }
         return $map[static::class];
     }
@@ -199,10 +205,10 @@ abstract class Controller extends ControllerAbstract
     public function getValidatorError($validator)
     {
         $errors = $validator->errors()->toArray();
-        foreach ($errors as $k => $v){
-            if ($this->checkHasCn($v)){
-                $message[] =  $v[0];
-            }else{
+        foreach ($errors as $k => $v) {
+            if ($this->checkHasCn($v)) {
+                $message[] = $v[0];
+            } else {
                 $message[] = "参数（{$k}）:" . $v[0];
             }
         }
