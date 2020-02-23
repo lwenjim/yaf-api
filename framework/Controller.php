@@ -81,13 +81,6 @@ abstract class Controller extends ControllerAbstract
     final public function getControllerAlias(String $name)
     {
         $map = [
-            'Kmapbaselogic'     => 'KmapBaseLogic',
-            'Kmapbaselogicnode' => 'KmapBaseLogicNode',
-            'Kmaplocal'         => 'KmapLocal',
-            'Kmapbasetree'      => 'KmapBaseTree',
-            'Kmaplocalnode'     => 'KmapLocalNode',
-            'Comoperatelog'     => 'ComOperateLog',
-            'Kmapbasetreenode'  => 'KmapBaseTreeNode',
         ];
         if (isset($map[$name])) {
             return $map[$name];

@@ -30,9 +30,6 @@ trait Bootstrap
     {
         $dispatcher->disableView();
         $dispatcher->catchException(false);
-//        $dispatcher->setErrorHandler(function(){
-//
-//        }, YAF_ERR_TYPE_ERROR);
         $dispatcher->throwException(true);
     }
 

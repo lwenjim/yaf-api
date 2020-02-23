@@ -232,9 +232,6 @@ abstract class Service
         $column = $this->getModelColumn();
         $column = ['updated_time' => time(), 'updated_user' => $this->user()->user_id] + $column;
         $data   = array_intersect_key($params, array_flip($column));
-        if (!empty($this->getParams()['parent_data'])) {
-            $model->getParent()->update($this->getParams()['parent_data']);
-        }
         $result = $model->update($data);
         $this->_putAfter($params, $result, $model);
         return compact('params', 'result', 'model');
@@ -247,56 +244,6 @@ abstract class Service
 
     protected function _putAfter(array &$params, $result, $model)
     {
-    }
-
-    public function batchInsert()
-    {
-        $params = $this->getParams();
-        $this->_batchInsertBefore($params);
-        $class    = $this->getModel();
-        $modelObj = new $class;
-        $column   = $this->getModelColumn();
-        $data     = array_map(function ($p) use ($column) {
-            return $data = array_intersect_key($p, array_flip($column)) + ['subject_id' => $this->getParam('subject_id')];
-        }, $params['batchInsert']);
-        if (!empty($this->getParams()['parent_data'])) {
-            $parentModel = $modelObj->getParent()->create($params['parent_data']);
-            $data        = array_map(function ($d) use ($parentModel) {
-                return $d + ['parent_id' => $parentModel->id];
-            }, $data);
-            $affectRow   = $this->getModel()::insert($data);
-        } else {
-            $data      = array_map(function ($d) {
-                return $d + $this->getCommonFields();
-            }, $data);
-            $affectRow = 0;
-            foreach (array_chunk($data, 100) as $group) {
-                $affectRow += $this->getModel()::insert($group);
-            }
-        }
-        $this->_batchInsertAfter($params, $affectRow);
-        return compact('params', 'affectRow');
-    }
-
-    public function batchUpdate()
-    {
-        $params = $this->getParams();
-        $this->_batchUpdateBefore($params);
-        $column = $this->getModelColumn();
-        $column = ['updated_time' => time(), 'updated_user' => $this->user()->user_id] + $column;
-        $result = [];
-        $models = [];
-        array_map(function ($p) use ($column, $params, &$result, &$models) {
-            $data  = array_intersect_key($p, array_flip($column));
-            $model = $this->getModel()::where(['id' => $p['id'], 'logic_id' => $params['logic_id']])->first();
-            if (!empty($params['parent_data'])) {
-                $model->getParent()->update($this->getParams()['parent_data']);
-            }
-            $result[] = $model->update($data);
-            $models[] = $model;
-        }, $params['batchUpdate']);
-        $this->_batchUpdateAfter($params, $result, $models);
-        return compact('params', 'result', 'models');
     }
 
     public function delete()
@@ -323,15 +270,6 @@ abstract class Service
 
     protected function _deleteAfter(array &$params, &$result)
     {
-    }
-
-    protected function operateLog($rowId, $action, $remark = '')
-    {
-    }
-
-    protected function getTableId()
-    {
-        return 0;
     }
 
     protected function collection($collection, $transformer)

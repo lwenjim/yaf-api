@@ -136,13 +136,6 @@ class Rewrite implements Route_Interface
         }
     }
 
-    /**
-     * Rewrite constructor.
-     * eg: '/cms/courseNotify'   => 'main/cms/course',
-     * @param array $rules
-     * @param \Yaf\Application $app
-     * @param string|null $prefix
-     */
     public function __construct(array $rules, \Yaf\Application $app, string $prefix = null)
     {
         $this->addRule($rules);
