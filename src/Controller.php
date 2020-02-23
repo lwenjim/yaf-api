@@ -12,11 +12,6 @@ abstract class Controller extends ControllerAbstract
 {
     use Json;
 
-    final protected function getParam(string $key)
-    {
-        return $this->getRequest()->getParam($key);
-    }
-
     protected function indexAction()
     {
         try {
@@ -31,6 +26,76 @@ abstract class Controller extends ControllerAbstract
         }
     }
 
+    protected function _indexBefore()
+    {
+    }
+
+    protected function todoCheck()
+    {
+        $params = $this->getParams();
+        if (!empty($this->getParam('todo'))) {
+            $method = $this->getParam('todo');
+            method_exists($this, $method) and $this->$method($params);
+            $service = $this->getService();
+            if (!method_exists($service, $method)) {
+                throw new \Exception('not exists method:' . $method . ' the service of ' . $service->getServiceName());
+            }
+            $result = call_user_func_array([$service, $method], [$params]);
+            $this->jsonResponse(200, '', $result);
+            return;
+        }
+    }
+
+    final public function getParams(...$getParams)
+    {
+        $allParams = $this->getRequest()->getParams();
+        if (empty($getParams)) return $allParams;
+        $result = array_intersect_key($allParams, $need = array_combine($getParams, $getParams));
+        return array_merge($need, $result);
+    }
+
+    final protected function getParam(string $key)
+    {
+        return $this->getRequest()->getParam($key);
+    }
+
+    public function getService():Service
+    {
+        $map = [];
+        $dir = base_path() . '/app/api/modules';
+        foreach (array_diff(scandir($dir), ['.', '..']) as $moduleName) {
+            $subDir = sprintf($dir . '/%s/controllers', $moduleName);
+            array_map(function (string $basename) use (&$map, $moduleName) {
+                $filename = pathinfo($basename, PATHINFO_FILENAME);
+                $filename = $this->getControllerAlias($filename);
+                $cur      = [$filename . "Controller" => '\\Lwenjim\\App\\Services\\' . $moduleName . '\\' . $filename . 'Service'];
+                $map      = array_merge($map, $cur);
+            }, array_diff(scandir($subDir), ['.', '..']));
+        }
+        return $map[static::class]::getInstance($this);
+    }
+
+    final public function getControllerAlias(String $name)
+    {
+        $map = [
+            'Kmapbaselogic'     => 'KmapBaseLogic',
+            'Kmapbaselogicnode' => 'KmapBaseLogicNode',
+            'Kmaplocal'         => 'KmapLocal',
+            'Kmapbasetree'      => 'KmapBaseTree',
+            'Kmaplocalnode'     => 'KmapLocalNode',
+            'Comoperatelog'     => 'ComOperateLog',
+            'Kmapbasetreenode'  => 'KmapBaseTreeNode',
+        ];
+        if (isset($map[$name])) {
+            return $map[$name];
+        }
+        return $name;
+    }
+
+    protected function _indexAfter(&$params, &$list)
+    {
+    }
+
     protected function getAction()
     {
         try {
@@ -43,6 +108,14 @@ abstract class Controller extends ControllerAbstract
             error($exception->getMessage());
             $this->jsonResponse(500, $exception->getMessage());
         }
+    }
+
+    protected function _getBefore($params)
+    {
+    }
+
+    protected function _getAfter(&$params, &$detail)
+    {
     }
 
     protected function postAction()
@@ -66,20 +139,88 @@ abstract class Controller extends ControllerAbstract
         }
     }
 
-    protected function todoCheck()
+    protected function validatePost($params): void
     {
-        $params = $this->getParams();
-        if (!empty($this->getParam('todo'))) {
-            $method = $this->getParam('todo');
-            method_exists($this, $method) and $this->$method($params);
-            $service = $this->getService();
-            if (!method_exists($service, $method)) {
-                throw new \Exception('not exists method:' . $method . ' the service of ' . $service->getServiceName());
-            }
-            $result = call_user_func_array([$service, $method], [$params]);
-            $this->jsonResponse(200, '', $result);
-            return;
+        list('rules' => $rules, 'message' => $message) = $this->_postBefore();
+        if (empty($rules) || empty($message)) {
+            $rules   = $this->getModel()::getRules();
+            $message = $this->getModel()::getMessages();
         }
+        if (!empty($rules) && !empty($message)) {
+            if (!$this->isBatch()) {
+                $params = [$params];
+            } else {
+                $params = $params['batchInsert'];
+            }
+            foreach ($params as $p) {
+                $validator = $this->validator()->make($p, $rules, $message);
+                if ($validator->fails()) {
+                    $this->jsonResponse(500, $this->getValidatorError($validator));
+                }
+            }
+        }
+    }
+
+    protected function _postBefore(): array
+    {
+        return ['rules' => [], 'message' => []];
+    }
+
+    public function getModel()
+    {
+        $map = [];
+        $dir = base_path() . '/app/api/modules';
+        foreach (array_diff(scandir($dir), ['.', '..']) as $moduleName) {
+            $subDir = sprintf($dir . '/%s/controllers', $moduleName);
+            array_map(function (string $basename) use (&$map, $moduleName) {
+                $filename = pathinfo($basename, PATHINFO_FILENAME);
+                $filename = $this->getControllerAlias($filename);
+                $cur      = [$filename . "Controller" => '\\Lwenjim\\App\\Models\\' . $moduleName . '\\' . $filename . 'Model'];
+                $map      = array_merge($map, $cur);
+            }, array_diff(scandir($subDir), ['.', '..']));
+        }
+        return $map[static::class];
+    }
+
+    public function isBatch()
+    {
+        return !empty($this->getParam('todo')) && substr($this->getParam('todo'), 0, 5) == 'batch';
+    }
+
+    public function validator()
+    {
+        static $validator = null;
+        if (empty($validator)) {
+            $validator = new Factory(new Translator(new ArrayLoader(), 'Translator'));
+        }
+        return $validator;
+    }
+
+    public function getValidatorError($validator)
+    {
+        $errors = $validator->errors()->toArray();
+        foreach ($errors as $k => $v){
+            if ($this->checkHasCn($v)){
+                $message[] =  $v[0];
+            }else{
+                $message[] = "参数（{$k}）:" . $v[0];
+            }
+        }
+        return implode("--", $message ?? []);
+    }
+
+    private function checkHasCn($str): bool
+    {
+        if ($ret = preg_grep("/[\x{4e00}-\x{9fff}]/u", $str)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    protected function _postAfter(&$params, $model)
+    {
+
     }
 
     protected function putAction()
@@ -126,6 +267,15 @@ abstract class Controller extends ControllerAbstract
         }
     }
 
+    protected function _putBefore(): array
+    {
+        return ['rules' => [], 'message' => []];
+    }
+
+    protected function _putAfter(&$params, $result, $model)
+    {
+    }
+
     protected function deleteAction()
     {
         try {
@@ -139,119 +289,8 @@ abstract class Controller extends ControllerAbstract
         }
     }
 
-    final protected function getParams(...$getParams)
+    protected function _deleteBefore(&$params)
     {
-        $allParams = $this->getRequest()->getParams();
-        if (empty($getParams)) return $allParams;
-        $result = array_intersect_key($allParams, $need = array_combine($getParams, $getParams));
-        return array_merge($need, $result);
-    }
-
-    protected function validatePost($params): void
-    {
-        list('rules' => $rules, 'message' => $message) = $this->_postBefore();
-        if (empty($rules) || empty($message)) {
-            $rules   = $this->getModel()::getRules();
-            $message = $this->getModel()::getMessages();
-        }
-        if (!empty($rules) && !empty($message)) {
-            if (!$this->isBatch()) {
-                $params = [$params];
-            } else {
-                $params = $params['batchInsert'];
-            }
-            foreach ($params as $p) {
-                $validator = $this->validator()->make($p, $rules, $message);
-                if ($validator->fails()) {
-                    $this->jsonResponse(500, $this->getValidatorError($validator));
-                }
-            }
-        }
-    }
-
-    public function isBatch()
-    {
-        return !empty($this->getParam('todo')) && substr($this->getParam('todo'), 0, 5) == 'batch';
-    }
-
-    final public function getControllerAlias(String $name)
-    {
-        $map = [
-            'Kmapbaselogic'     => 'KmapBaseLogic',
-            'Kmapbaselogicnode' => 'KmapBaseLogicNode',
-            'Kmaplocal'         => 'KmapLocal',
-            'Kmapbasetree'      => 'KmapBaseTree',
-            'Kmaplocalnode'     => 'KmapLocalNode',
-            'Comoperatelog'     => 'ComOperateLog',
-            'Kmapbasetreenode'  => 'KmapBaseTreeNode',
-        ];
-        if (isset($map[$name])) {
-            return $map[$name];
-        }
-        return $name;
-    }
-
-    public function getService():Service
-    {
-        $map = [];
-        $dir = base_path() . '/app/api/modules';
-        foreach (array_diff(scandir($dir), ['.', '..']) as $moduleName) {
-            $subDir = sprintf($dir . '/%s/controllers', $moduleName);
-            array_map(function (string $basename) use (&$map, $moduleName) {
-                $filename = pathinfo($basename, PATHINFO_FILENAME);
-                $filename = $this->getControllerAlias($filename);
-                $cur      = [$filename . "Controller" => '\\Lwenjim\\App\\Services\\' . $moduleName . '\\' . $filename . 'Service'];
-                $map      = array_merge($map, $cur);
-            }, array_diff(scandir($subDir), ['.', '..']));
-        }
-        return $map[static::class]::getInstance($this);
-    }
-
-    public function getModel()
-    {
-        $map = [];
-        $dir = base_path() . '/app/api/modules';
-        foreach (array_diff(scandir($dir), ['.', '..']) as $moduleName) {
-            $subDir = sprintf($dir . '/%s/controllers', $moduleName);
-            array_map(function (string $basename) use (&$map, $moduleName) {
-                $filename = pathinfo($basename, PATHINFO_FILENAME);
-                $filename = $this->getControllerAlias($filename);
-                $cur      = [$filename . "Controller" => '\\Lwenjim\\App\\Models\\' . $moduleName . '\\' . $filename . 'Model'];
-                $map      = array_merge($map, $cur);
-            }, array_diff(scandir($subDir), ['.', '..']));
-        }
-        return $map[static::class];
-    }
-
-    public function validator()
-    {
-        static $validator = null;
-        if (empty($validator)) {
-            $validator = new Factory(new Translator(new ArrayLoader(), 'Translator'));
-        }
-        return $validator;
-    }
-
-    public function getValidatorError($validator)
-    {
-        $errors = $validator->errors()->toArray();
-        foreach ($errors as $k => $v){
-            if ($this->checkHasCn($v)){
-                $message[] =  $v[0];
-            }else{
-                $message[] = "参数（{$k}）:" . $v[0];
-            }
-        }
-        return implode("--", $message ?? []);
-    }
-
-    private function checkHasCn($str): bool
-    {
-        if ($ret = preg_grep("/[\x{4e00}-\x{9fff}]/u", $str)) {
-            return true;
-        } else {
-            return false;
-        }
     }
 
     protected function setParam(string $name, $value = null)
@@ -272,50 +311,11 @@ abstract class Controller extends ControllerAbstract
         })->call($this->getRequest());
     }
 
-    protected function _indexBefore()
-    {
-    }
-
-    protected function _indexAfter(&$params, &$list)
-    {
-    }
-
-    protected function _getBefore($params)
-    {
-    }
-
-    protected function _getAfter(&$params, &$detail)
-    {
-    }
-
-    protected function _postBefore(): array
-    {
-        return ['rules' => [], 'message' => []];
-    }
-
-    protected function _postAfter(&$params, $model)
-    {
-
-    }
-
-    protected function _putBefore(): array
-    {
-        return ['rules' => [], 'message' => []];
-    }
-
-    protected function _putAfter(&$params, $result, $model)
-    {
-    }
-
     protected function _patchBefore(&$params)
     {
     }
 
     protected function _patchAfter(&$params, &$result)
-    {
-    }
-
-    protected function _deleteBefore(&$params)
     {
     }
 

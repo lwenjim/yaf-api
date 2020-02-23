@@ -13,7 +13,14 @@ use League\Fractal\Manager;
 use League\Fractal\Pagination\IlluminatePaginatorAdapter;
 use League\Fractal\Resource\Collection;
 use League\Fractal\Resource\Item;
+use Yaf\Request_Abstract as Request;
 
+/**
+ * Class Service
+ * @method array getParams();
+ * @method Request getRequest();
+ * @package Lwenjim\Yaf
+ */
 abstract class Service
 {
     use Instance;
@@ -24,17 +31,6 @@ abstract class Service
         $this->setController($abstract);
     }
 
-    public static function fillter($model, array $params)
-    {
-        $fillable = $model->getFillable();
-        $fillable = array_flip($fillable);
-        foreach ($params as $k => $v) {
-            if (!isset($fillable[$k]))
-                unset($params[$k]);
-        }
-        return $params;
-    }
-
     public function getServiceName()
     {
         return static::class;
@@ -42,12 +38,12 @@ abstract class Service
 
     public function __call($name, $arguments)
     {
-        if (in_array($name, ['getRequest'])) {
+        if (in_array($name, ['getRequest', 'getParams'])) {
             return call_user_func_array([$this->getController(), $name], $arguments);
         }
     }
 
-    public function getController(): Controller
+    public function getController(): ?Controller
     {
         return $this->controller;
     }
@@ -83,6 +79,10 @@ abstract class Service
         $list = $this->paginator($data, new $class);
         $this->_indexAfter($params, $list);
         return compact('params', 'list');
+    }
+
+    protected function _indexBefore(array $params)
+    {
     }
 
     protected function getTransformer()
@@ -135,6 +135,22 @@ abstract class Service
         return $this->getManager()->createData($resource)->toArray();
     }
 
+    protected function getManager()
+    {
+        static $manager;
+        if (empty($manager)) {
+            $manager = new Manager();
+        }
+        if ($this->getParam('include')) {
+            $manager->parseIncludes($this->getParam('include'));
+        }
+        return $manager;
+    }
+
+    protected function _indexAfter(array &$params, &$list)
+    {
+    }
+
     public function get()
     {
         $params = $this->getParams();
@@ -150,10 +166,18 @@ abstract class Service
         return compact('params', 'detail');
     }
 
+    protected function _getBefore(array $params)
+    {
+    }
+
     protected function item($item, $transformer)
     {
         $resource = new Item($item, $transformer);
         return $this->getManager()->createData($resource)->toArray();
+    }
+
+    protected function _getAfter(array &$params, &$detail)
+    {
     }
 
     public function post()
@@ -175,6 +199,11 @@ abstract class Service
         return compact('params', 'model');
     }
 
+    protected function _postBefore(array $params): array
+    {
+        return ['rules' => [], 'message' => []];
+    }
+
     protected function getCommonFields()
     {
         return ['created_user' => $this->user()->user_id, 'updated_user' => $this->user()->user_id, 'status' => 1, 'subject_id' => $this->getParam('subject_id')];
@@ -183,6 +212,11 @@ abstract class Service
     protected function user(int $userId = 0)
     {
         return $this->getController()->user($userId);
+    }
+
+    protected function _postAfter(array &$params, $model)
+    {
+
     }
 
     public function put()
@@ -199,6 +233,15 @@ abstract class Service
         $result = $model->update($data);
         $this->_putAfter($params, $result, $model);
         return compact('params', 'result', 'model');
+    }
+
+    protected function _putBefore(array $params): array
+    {
+        return ['rules' => [], 'message' => []];
+    }
+
+    protected function _putAfter(array &$params, $result, $model)
+    {
     }
 
     public function batchInsert()
@@ -269,6 +312,14 @@ abstract class Service
         return compact('params', 'result');
     }
 
+    protected function _deleteBefore(array &$params)
+    {
+    }
+
+    protected function _deleteAfter(array &$params, &$result)
+    {
+    }
+
     protected function operateLog($rowId, $action, $remark = '')
     {
     }
@@ -282,68 +333,5 @@ abstract class Service
     {
         $resource = new Collection($collection, $transformer);
         return $this->getManager()->createData($resource)->toArray();
-    }
-
-    protected function getManager()
-    {
-        static $manager;
-        if (empty($manager)) {
-            $manager = new Manager();
-        }
-        if ($this->getParam('include')) {
-            $manager->parseIncludes($this->getParam('include'));
-        }
-        return $manager;
-    }
-
-    protected function _indexBefore()
-    {
-    }
-
-    protected function _indexAfter(&$params, &$list)
-    {
-    }
-
-    protected function _getBefore($params)
-    {
-    }
-
-    protected function _getAfter(&$params, &$detail)
-    {
-    }
-
-    protected function _postBefore(): array
-    {
-        return ['rules' => [], 'message' => []];
-    }
-
-    protected function _postAfter(&$params, $model)
-    {
-
-    }
-
-    protected function _putBefore(): array
-    {
-        return ['rules' => [], 'message' => []];
-    }
-
-    protected function _putAfter(&$params, $result, $model)
-    {
-    }
-
-    protected function _patchBefore(&$params)
-    {
-    }
-
-    protected function _patchAfter(&$params, &$result)
-    {
-    }
-
-    protected function _deleteBefore(&$params)
-    {
-    }
-
-    protected function _deleteAfter(&$params, &$result)
-    {
     }
 }
