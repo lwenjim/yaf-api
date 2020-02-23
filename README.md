@@ -25,4 +25,3 @@ yaf.use_spl_autoload = 1
 * 9.service 层 aop 主要解决 实体之间外键的关联，保持联动更新
 * 10.采用 league/fractal 模型层到表现层转换 [参考](https://github.com/thephpleague/fractal)
 
-#### 使用方法
