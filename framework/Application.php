@@ -45,7 +45,7 @@ class Application extends Container
             $config    = array(
                 "application" => array(
                     "directory" => $basePath . '/app/api',
-                    "library"   => $basePath . '/yaf',
+                    "library"   => $basePath . '/framework',
                     "modules"   => 'index,api',
                 ),
             );

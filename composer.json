@@ -36,13 +36,13 @@
     },
     "autoload": {
         "psr-4": {
-            "Lwenjim\\Yaf\\": "yaf/",
+            "Lwenjim\\Yaf\\": "framework/",
             "Lwenjim\\App\\Models\\": "app/api/models",
             "Lwenjim\\App\\Services\\": "app/api/services",
             "Lwenjim\\App\\Transformers\\": "app/api/Transformers"
         },
         "files": [
-            "yaf/helps.php"
+            "framework/helps.php"
         ]
     },
     "extra": {
