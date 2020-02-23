@@ -1,15 +1,6 @@
 ## 构建须知
 
-## 此系统基于php yaf扩展框架构建
-
-* yaf介绍:http://www.laruence.com/2011/05/12/2009.html
-* yaf版本:请用3.0.7版本编译构建
-* yaf地址:http://pecl.php.net/package/yaf/3.0.7
-* yaf文档:http://php.net/manual/en/book.yaf.php
-* yaf用户手册:http://www.laruence.com/manual/
-
-## 开发环境php.ini yaf配置
-
+#### 运行配置
 ```code
 [yaf]
 yaf.environ = 'dev'
@@ -17,25 +8,12 @@ yaf.use_namespace = 1
 yaf.use_spl_autoload = 1
 ```
 
-## 路由协议
-* Restful 
+#### 路由协议
 * Rewrite
+* Restful 
+* default
 
-
-## 一些常用的文档
-
-* [Particle\Validator](http://validator.particle-php.com/en/latest/rules/#included-validation-rules) 是一个小巧优雅的验证类库，提供了一个非常简洁的API
-
-## 开发的一些原则和规范
-
- * 编写的代码请遵循 PSR-2 风格 [关于PSR](https://psr.phphub.org/)
- * 所有代码请设置为utf-8编码
- * 数据库所有编码请设置为utf8mb4
- * 在API层请调用SDK的Service相关方法访问数据
- * 在API层禁止直接调用SDK的Model相关方法
-
-
-## 框架设计
+#### 基本设计
 * 1.yaf + orm(eloquent) [yaf-参考](https://www.php.net/manual/zh/book.yaf.php) [eloquent-参考](https://laravel.com/docs/6.x/eloquent)
 * 2.接口统一采取 restful 合计规范 [参考](http://www.ruanyifeng.com/blog/2018/10/restful-api-best-practices.html)
 * 3.请求方式支持 GET，POST，PUT(HTTP HEADER 添加 X-HTTP-Method-Override:PUT)
@@ -47,4 +25,4 @@ yaf.use_spl_autoload = 1
 * 9.service 层 aop 主要解决 实体之间外键的关联，保持联动更新
 * 10.采用 league/fractal 模型层到表现层转换 [参考](https://github.com/thephpleague/fractal)
 
-## 使用方法
+#### 使用方法
