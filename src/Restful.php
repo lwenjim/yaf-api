@@ -26,6 +26,7 @@ class Restful implements Route_Interface
         if (!in_array($method, array('get', 'post', 'put', 'delete'))) {
             throw new YafException("{$method} not supported", 405);
         }
+
         $path = $_SERVER['REQUEST_URI'];
         if (($pos = strpos($path, '?')) != false) {
             $path = substr($path, 0, $pos);

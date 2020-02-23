@@ -64,11 +64,13 @@ class Rewrite implements Route_Interface
                     $this->checkModule($module);
                     $request->setModuleName($module);
                 }
+
                 if (!empty($controller)) {
                     $controller = ucfirst($controller);
                     $className  = $this->checkController($module, $controller);
                     $request->setControllerName($controller);
                 }
+
                 if (!empty($action)) {
                     $this->checkAction($className ?? '', $action . 'Action');
                     $request->setActionName($action);
@@ -112,9 +114,8 @@ class Rewrite implements Route_Interface
         if (!empty($module)) {
             $path .= "/modules/" . $module . '/controllers';
         }
-        $ext  = $this->getApp()->getConfig()->get('application.ext') ?? 'php';
-        $path .= '/' . $controller . '.' . $ext;
-        if (!is_file($path)) {
+        $path .= '/' . $controller . '.php';
+        if (!is_file($path) || !file_exists($path)) {
             throw new RouterFailed(sprintf("not exits file:%s", $path), 500);
         }
         require_once $path;
@@ -135,7 +136,14 @@ class Rewrite implements Route_Interface
         }
     }
 
-    public function __construct($rules, \Yaf\Application $app, string $prefix)
+    /**
+     * Rewrite constructor.
+     * eg: '/cms/courseNotify'   => 'main/cms/course',
+     * @param array $rules
+     * @param \Yaf\Application $app
+     * @param string|null $prefix
+     */
+    public function __construct(array $rules, \Yaf\Application $app, string $prefix = null)
     {
         $this->addRule($rules);
         $this->setApp($app);
@@ -144,15 +152,19 @@ class Rewrite implements Route_Interface
 
     public function route($request)
     {
-        list($path, $query) = explode('?', str_replace('//', '/', $_SERVER['REQUEST_URI'])) + [null, null];
-        $this->setParams($query, $request);
-        if (!$this->checkPrefixAndCutPrefix($path)) {
+        try{
+            list($path, $query) = explode('?', str_replace('//', '/', $_SERVER['REQUEST_URI'])) + [null, null];
+            $this->setParams($query, $request);
+            if (!$this->checkPrefixAndCutPrefix($path)) {
+                return false;
+            }
+            $closure = $this->getRule(strtolower($path));
+            if (null != $closure && is_callable($closure)) {
+                $closure($request);
+                return true;
+            }
+        }catch (\Exception $exception){
             return false;
-        }
-        $closure = $this->getRule(strtolower($path));
-        if (null != $closure && is_callable($closure)) {
-            $closure($request);
-            return true;
         }
         return false;
     }
