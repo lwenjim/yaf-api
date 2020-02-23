@@ -17,6 +17,11 @@ yaf.use_namespace = 1
 yaf.use_spl_autoload = 1
 ```
 
+## 路由协议
+* Restful 
+* Rewrite
+
+
 ## 一些常用的文档
 
 * [Particle\Validator](http://validator.particle-php.com/en/latest/rules/#included-validation-rules) 是一个小巧优雅的验证类库，提供了一个非常简洁的API
