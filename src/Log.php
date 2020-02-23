@@ -8,7 +8,6 @@
 
 namespace Lwenjim\Yaf;
 
-use Lwenjim\Yaf\Log\StreamHandler;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Logger;
 
@@ -84,6 +83,5 @@ class Log
     public function error($str, $context = [])
     {
         $this->log->error($str, $context);
-        return $this;
     }
 }

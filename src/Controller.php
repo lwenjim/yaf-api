@@ -10,7 +10,7 @@ use Yaf\Controller_Abstract as ControllerAbstract;
 
 abstract class Controller extends ControllerAbstract
 {
-    use Json, Aop, Request;
+    use Json;
 
     final protected function getParam(string $key)
     {
@@ -252,5 +252,74 @@ abstract class Controller extends ControllerAbstract
         } else {
             return false;
         }
+    }
+
+    protected function setParam(string $name, $value = null)
+    {
+        return $this->getRequest()->setParam($name, $value);
+    }
+
+    protected function unsetParam($name)
+    {
+        (function () use ($name) {
+            if (($list = explode('.', $name)) > 1) {
+                $val  = '$this->params' . "['" . implode("']['", $list) . "']";
+                $eval = "if (isset({$val})) unset({$val});";
+                eval($eval);
+            } else {
+                if (isset($this->params[$name])) unset($this->params[$name]);
+            }
+        })->call($this->getRequest());
+    }
+
+    protected function _indexBefore()
+    {
+    }
+
+    protected function _indexAfter(&$params, &$list)
+    {
+    }
+
+    protected function _getBefore($params)
+    {
+    }
+
+    protected function _getAfter(&$params, &$detail)
+    {
+    }
+
+    protected function _postBefore(): array
+    {
+        return ['rules' => [], 'message' => []];
+    }
+
+    protected function _postAfter(&$params, $model)
+    {
+
+    }
+
+    protected function _putBefore(): array
+    {
+        return ['rules' => [], 'message' => []];
+    }
+
+    protected function _putAfter(&$params, $result, $model)
+    {
+    }
+
+    protected function _patchBefore(&$params)
+    {
+    }
+
+    protected function _patchAfter(&$params, &$result)
+    {
+    }
+
+    protected function _deleteBefore(&$params)
+    {
+    }
+
+    protected function _deleteAfter(&$params, &$result)
+    {
     }
 }
