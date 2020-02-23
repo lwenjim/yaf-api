@@ -32,9 +32,10 @@ class Restful implements Route_Interface
             $path = substr($path, 0, $pos);
         }
         $path = $path == '/' ? "Api/Api/index" : $path;
-        list($module, $control, $param1, $param2) = ($path == '/' ? [] : explode('/', ltrim($path, '/'))) + ['', '', $method, 0];
-        $id     = is_numeric($param1) ? $param1 : $param2;
-        $method = (is_numeric($param1) || empty($param1)) ? $method : $param1;
+        list($module, $control, $id) = ($path == '/' ? [] : explode('/', ltrim($path, '/'))) + ['', '', null];
+        if (!empty($id) && !is_numeric($id)) {
+            return false;
+        }
         $action = empty($id) && $method == "get" ? "index" : $method;
         $id > 0 && $request->setParam("id", $id);
         $this->initParam($request, $overRide);
